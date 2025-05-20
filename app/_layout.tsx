@@ -1,39 +1,34 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+// app/_layout.tsx — Fix for iOS Safe Area
+import "../global.css";
+import { ClerkProvider } from '@clerk/clerk-expo';
+import { tokenCache } from '@clerk/clerk-expo/token-cache';
+import { Slot, useRouter } from 'expo-router';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+    return (
+        <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
+            <MainLayout />
+        </ClerkProvider>
+    );
+}
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+function MainLayout() {
+    const router = useRouter();
 
-  if (!loaded) {
-    return null;
-  }
+    return (
+        <SafeAreaView className="flex-1 bg-sand">
+            <View className="bg-forest py-4 px-6 flex-row justify-between items-center">
+                <Text className="text-sand text-xl font-serif">Blooming Hand</Text>
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+                <TouchableOpacity onPress={() => router.push('/')}>
+                    <Text className="text-sand underline">Dashboard</Text>
+                </TouchableOpacity>
+            </View>
+            <Slot />
+        </SafeAreaView>
+    );
 }
